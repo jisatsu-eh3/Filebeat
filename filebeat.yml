@@ -1,0 +1,29 @@
+### For Kibana to work with self signed certs
+
+setup.kibana:
+  host: "https://<Kibana-IP>:5601"
+  ssl.certificateAuthorities: [/etc/filebeat/elasticsearch-ca.pem]
+  ssl.verification_mode: "none"
+
+### For Elastic to work with self signed certs
+
+output.elasticsearch:
+  hosts: ["<Elastic-IP>:9200"]
+  protocol: "https"
+  username: "elastic"
+  password: "4gbESGmQ0_DZa9dhLjeK"
+
+  ssl.certificateAuthorities: [/etc/filebeat/elasticsearch-ca.pem]
+  ssl.ca_trusted_fingerprint: "38c67aab6c4c321edfa246b9d6b39f335794af9d8da685f95f9343ca8ea93788"
+  ssl.verification_mode: "none"
+
+### Below is a way to managing indice inside of filebeat.yml to have a specific index for specific modules 
+### If you only need a specific module to have an index such as the threatintel below and the rest can be filebeat, then just remove the second half.
+### Be sure to create a index template for your new custom index and assign a policy to it.
+  indices:
+   - index: "threatintel-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.equals:
+        event.module: "threatintel"
+   - index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+      when.not.equals:
+        event.module: "threatintel"
